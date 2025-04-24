@@ -29,12 +29,14 @@ A responsive web application for creating, editing, and managing notes with AI s
 ### Installation
 
 1. Clone the repository
+
 ```bash
 git clone https://github.com/yourusername/ai-powered-notes.git
 cd ai-powered-notes
 ```
 
 2. Install dependencies
+
 ```bash
 npm install
 # or
@@ -42,7 +44,8 @@ yarn install
 ```
 
 3. Set up environment variables
-Create a `.env.local` file in the root directory with the following variables:
+   Create a `.env.local` file in the root directory with the following variables:
+
 ```
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
@@ -50,9 +53,11 @@ DEEPSEEK_API_KEY=your_deepseek_api_key
 ```
 
 4. Set up Supabase
+
 - Create a new project in Supabase
 - Set up authentication (Email and Google OAuth)
 - Create a `notes` table with the following schema:
+
   ```sql
   CREATE TABLE notes (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
@@ -85,6 +90,7 @@ DEEPSEEK_API_KEY=your_deepseek_api_key
   ```
 
 5. Run the development server
+
 ```bash
 npm run dev
 # or
@@ -101,6 +107,10 @@ The application can be easily deployed to Vercel:
 2. Connect your repository to Vercel
 3. Add the environment variables to your Vercel project
 4. Deploy
+
+### Live Demo
+
+The application is currently deployed and available at [https://smart-note-ai.vercel.app/](https://smart-note-ai.vercel.app/)
 
 ## License
 

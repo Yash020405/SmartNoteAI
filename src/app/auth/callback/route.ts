@@ -16,6 +16,13 @@ export async function GET(request: Request) {
     await supabase.auth.exchangeCodeForSession(code);
   }
 
+  // Determine the appropriate origin - support both localhost and deployed URL
+  // Handles the case when we're in a development environment (localhost)
+  // or in the production environment (smart-note-ai.vercel.app)
+  const redirectOrigin = requestUrl.origin.includes('localhost') 
+    ? requestUrl.origin 
+    : 'https://smart-note-ai.vercel.app';
+
   // URL to redirect to after sign in completes
-  return NextResponse.redirect(new URL('/dashboard', requestUrl.origin));
-} 
+  return NextResponse.redirect(new URL('/dashboard', redirectOrigin));
+}
