@@ -3,13 +3,11 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
-import { LogOut, User, Mail, Trash2 } from "lucide-react";
+import { LogOut, Mail, Trash2 } from "lucide-react";
 
 export default function SettingsPage() {
   const [user, setUser] = useState<any>(null);

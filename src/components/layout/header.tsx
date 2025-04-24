@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
-import { LogOut, User, Sparkles, FilePlus, Home } from "lucide-react";
+import { LogOut, Sparkles, Home } from "lucide-react";
 
 export default function Header() {
   const [user, setUser] = useState<any>(null);
