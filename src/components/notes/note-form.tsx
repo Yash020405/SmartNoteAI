@@ -14,7 +14,8 @@ interface NoteFormProps {
 
 export default function NoteForm({ id }: NoteFormProps) {
   const router = useRouter();
-  const isEdit = Boolean(id);
+  const [isEdit, setIsEdit] = useState(Boolean(id));
+  const [currentNoteId, setCurrentNoteId] = useState(id);
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -36,8 +37,11 @@ export default function NoteForm({ id }: NoteFormProps) {
   }, []);
 
   useEffect(() => {
-    if (isEdit && id && userId) {
-      getNote(id)
+    setIsEdit(Boolean(id));
+    setCurrentNoteId(id);
+
+    if (isEdit && currentNoteId && userId) {
+      getNote(currentNoteId)
         .then((note) => {
           setTitle(note.title);
           setContent(note.content);
@@ -86,16 +90,27 @@ export default function NoteForm({ id }: NoteFormProps) {
         summary: hasSummary ? summary : undefined, // Keep existing summary if present
       };
 
-      if (isEdit && id) {
-        await updateNote(id, noteData);
+      if (isEdit && currentNoteId) {
+        await updateNote(currentNoteId, noteData);
+        toast.success("Note updated");
       } else {
-        await createNote({
+        // Create new note and update component state to edit mode
+        const newNote = await createNote({
           user_id: userId,
           ...noteData,
         });
+
+        // Update the URL without full page navigation
+        window.history.pushState({}, "", `/dashboard/notes/${newNote.id}`);
+
+        // Update component state to be in edit mode for this note
+        setIsEdit(true);
+        setCurrentNoteId(newNote.id);
+
+        toast.success("Note created");
       }
-      toast.success("Note saved");
-    } catch {
+    } catch (error) {
+      console.error("Save failed:", error);
       toast.error("Save failed.");
     } finally {
       setLoading((s) => ({ ...s, save: false }));
@@ -115,35 +130,31 @@ export default function NoteForm({ id }: NoteFormProps) {
         summary: unsavedSummary,
       };
 
-      // If we're in edit mode or we've already saved the note with handleSaveContent
-      if (isEdit && id) {
+      // If we're in edit mode with an existing note ID
+      if (isEdit && currentNoteId) {
         // Update existing note with the summary
-        await updateNote(id, noteData);
+        await updateNote(currentNoteId, noteData);
         setSummary(unsavedSummary);
         setHasSummary(true);
         setUnsavedSummary("");
-        toast.success("Summary saved");
+        toast.success("Summary saved to existing note");
       } else {
-        // Check if the note has been saved before
-        // If not, save it as a new note (this should ideally be rare since we encourage saving first)
-        try {
-          const newNote = await createNote({
-            user_id: userId,
-            ...noteData,
-          });
-          
-          // Update states and redirect to the edit page of this new note to prevent future duplicates
-          setSummary(unsavedSummary);
-          setHasSummary(true);
-          setUnsavedSummary("");
-          toast.success("Note created with summary");
-          
-          // Navigate to the edit page of the newly created note
-          router.push(`/dashboard/notes/${newNote.id}`);
-        } catch (error) {
-          console.error("Failed to create note with summary:", error);
-          toast.error("Failed to save note with summary");
-        }
+        // Create a new note with the summary
+        const newNote = await createNote({
+          user_id: userId,
+          ...noteData,
+        });
+
+        // Update component state
+        setSummary(unsavedSummary);
+        setHasSummary(true);
+        setUnsavedSummary("");
+        setIsEdit(true);
+        setCurrentNoteId(newNote.id);
+
+        // Update the URL
+        window.history.pushState({}, "", `/dashboard/notes/${newNote.id}`);
+        toast.success("New note created with summary");
       }
     } catch (error) {
       console.error("Failed to save summary:", error);
@@ -270,11 +281,17 @@ export default function NoteForm({ id }: NoteFormProps) {
       {/* Animation for fade-in */}
       <style jsx global>{`
         .animate-fade-in {
-          animation: fadeIn 0.7s cubic-bezier(0.4,0,0.2,1) both;
+          animation: fadeIn 0.7s cubic-bezier(0.4, 0, 0.2, 1) both;
         }
         @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(16px);}
-          to { opacity: 1; transform: translateY(0);}
+          from {
+            opacity: 0;
+            transform: translateY(16px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
       `}</style>
     </div>

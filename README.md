@@ -8,7 +8,7 @@ The application is currently deployed and available at [https://smart-note-ai.ve
 
 ## Demo Video
 
-[Watch the demo video](link-to-your-demo-video) to see Smart Notes in action.
+[Watch the demo video](https://www.loom.com/share/3509a50a1df34dab903e3203795bbb80?sid=0108c085-224c-4937-9475-0169ec06fb01) to see Smart Notes in action.
 
 ## Features
 
