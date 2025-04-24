@@ -10,7 +10,10 @@ export const metadata: Metadata = {
 export default function AuthPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-black p-4 sm:p-6 md:p-8">
-      <BackgroundBlur className="fixed inset-0" />
+      <BackgroundBlur className="fixed inset-0">
+        {/* This empty fragment satisfies the children requirement */}
+        <></>
+      </BackgroundBlur>
       
       <div className="animate-fade-in max-w-md w-full">
         <div className="text-center mb-5">
@@ -30,4 +33,4 @@ export default function AuthPage() {
       </div>
     </div>
   );
-} 
+}

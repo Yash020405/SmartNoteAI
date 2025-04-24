@@ -8,9 +8,10 @@ import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import { LogOut, Mail, Trash2 } from "lucide-react";
+import { User } from "@supabase/supabase-js";
 
 export default function SettingsPage() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -35,8 +36,9 @@ export default function SettingsPage() {
       await supabase.auth.signOut();
       toast.success("Logged out successfully");
       router.push("/");
-    } catch (error: any) {
-      toast.error(error.message || "Error logging out");
+    } catch (error: unknown) {
+      const errorMsg = error instanceof Error ? error.message : "Error logging out";
+      toast.error(errorMsg);
     }
   };
 
@@ -59,8 +61,9 @@ export default function SettingsPage() {
         }
         toast.success("Account deleted successfully");
         router.push("/");
-      } catch (error: any) {
-        toast.error(error.message || "Failed to delete account");
+      } catch (error: unknown) {
+        const errorMsg = error instanceof Error ? error.message : "Failed to delete account";
+        toast.error(errorMsg);
       } finally {
         setIsLoading(false);
       }

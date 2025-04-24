@@ -1,17 +1,16 @@
-import { Link } from "next/navigation";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Search, Sparkles } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ModeToggle } from "@/components/mode-toggle";
 import { UserButton } from "@/components/ui/user-button";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useForm } from "react-hook-form";
 
 const Header = () => {
-  const router = useRouter();
   const { register } = useForm();
-  const pathname = router.pathname;
+  const pathname = usePathname();
   const user = true; // Replace with actual user authentication logic
 
   return (
@@ -105,4 +104,4 @@ const Header = () => {
   );
 };
 
-export default Header; 
+export default Header;

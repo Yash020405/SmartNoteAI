@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +8,6 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
 export function CreateAccountForm() {
-  const router = useRouter();
   const supabase = createClientComponentClient();
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
@@ -140,4 +138,4 @@ export function CreateAccountForm() {
       </Button>
     </div>
   );
-} 
+}

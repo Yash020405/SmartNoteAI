@@ -10,6 +10,7 @@ import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { LockIcon, MailIcon, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { AuthError } from "@supabase/supabase-js";
 
 interface AuthFormProps {
   isRegister?: boolean;
@@ -50,8 +51,9 @@ export default function AuthForm({ isRegister = false }: AuthFormProps) {
         router.push("/dashboard");
         router.refresh();
       }
-    } catch (error: any) {
-      toast.error(error.message || "Authentication failed");
+    } catch (error: unknown) {
+      const errorMessage = error instanceof AuthError ? error.message : "Authentication failed";
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -73,8 +75,9 @@ export default function AuthForm({ isRegister = false }: AuthFormProps) {
       }
       
       // Supabase handles redirection automatically
-    } catch (error: any) {
-      toast.error(error.message || "Google authentication failed");
+    } catch (error: unknown) {
+      const errorMessage = error instanceof AuthError ? error.message : "Google authentication failed";
+      toast.error(errorMessage);
       setIsLoading(false);
     }
   };
@@ -171,10 +174,10 @@ export default function AuthForm({ isRegister = false }: AuthFormProps) {
           </Link>
         ) : (
           <Link href="/register" className="text-sm text-purple-400 hover:text-purple-300 transition-colors">
-            Don't have an account? Sign Up
+            Don&apos;t have an account? Sign Up
           </Link>
         )}
       </CardFooter>
     </Card>
   );
-} 
+}

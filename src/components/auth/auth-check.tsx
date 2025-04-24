@@ -11,9 +11,9 @@ export default function AuthCheck({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data } = await supabase.auth.getSession();
 
-        if (!session) {
+        if (!data.session) {
           router.push("/");
           return;
         }
@@ -28,7 +28,7 @@ export default function AuthCheck({ children }: { children: React.ReactNode }) {
     checkAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      (event) => {
         if (event === "SIGNED_OUT") {
           router.push("/");
         }
@@ -49,4 +49,4 @@ export default function AuthCheck({ children }: { children: React.ReactNode }) {
   }
 
   return <>{children}</>;
-} 
+}

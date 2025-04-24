@@ -145,14 +145,14 @@ export const summarizeText = async (text: string) => {
     }
     
     return data.summary;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error summarizing text:', error);
     
     // Better handling for abort errors
-    if (error.name === 'AbortError') {
+    if (error instanceof Error && error.name === 'AbortError') {
       throw new Error('Summarization request timed out. Please try again.');
     }
     
     throw error;
   }
-}; 
+};

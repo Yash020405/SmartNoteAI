@@ -105,7 +105,7 @@ export default function Dashboard() {
     try {
       return formatDistanceToNow(new Date(dateString), { addSuffix: true });
     } catch (error) {
-      return "Invalid date";
+      return `Invalid date: ${error}`;
     }
   };
 

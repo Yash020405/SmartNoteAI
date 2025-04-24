@@ -15,9 +15,10 @@ import {
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { LogOut, Sparkles, Home } from "lucide-react";
+import { User } from "@supabase/supabase-js";
 
 export default function Header() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -50,8 +51,9 @@ export default function Header() {
       await supabase.auth.signOut();
       toast.success("Logged out successfully");
       router.push("/");
-    } catch (error: any) {
-      toast.error(error.message || "Error logging out");
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Error logging out";
+      toast.error(errorMessage);
     }
   };
   
@@ -121,4 +123,4 @@ export default function Header() {
       </div>
     </header>
   );
-} 
+}
