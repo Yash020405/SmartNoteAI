@@ -105,6 +105,7 @@ export default function NoteForm({ id }: NoteFormProps) {
   // Save only the summary
   const handleSaveSummary = async () => {
     if (!unsavedSummary.trim()) return toast.error("No summary to save");
+    if (!userId) return toast.error("Login required.");
 
     setLoading((s) => ({ ...s, saveSummary: true }));
     try {
@@ -114,23 +115,38 @@ export default function NoteForm({ id }: NoteFormProps) {
         summary: unsavedSummary,
       };
 
+      // If we're in edit mode or we've already saved the note with handleSaveContent
       if (isEdit && id) {
+        // Update existing note with the summary
         await updateNote(id, noteData);
         setSummary(unsavedSummary);
         setHasSummary(true);
         setUnsavedSummary("");
         toast.success("Summary saved");
-      } else if (userId) {
-        const newNote = await createNote({
-          user_id: userId,
-          ...noteData,
-        });
-        setSummary(unsavedSummary);
-        setHasSummary(true);
-        setUnsavedSummary("");
-        router.push(`/dashboard/notes/${newNote.id}`);
+      } else {
+        // Check if the note has been saved before
+        // If not, save it as a new note (this should ideally be rare since we encourage saving first)
+        try {
+          const newNote = await createNote({
+            user_id: userId,
+            ...noteData,
+          });
+          
+          // Update states and redirect to the edit page of this new note to prevent future duplicates
+          setSummary(unsavedSummary);
+          setHasSummary(true);
+          setUnsavedSummary("");
+          toast.success("Note created with summary");
+          
+          // Navigate to the edit page of the newly created note
+          router.push(`/dashboard/notes/${newNote.id}`);
+        } catch (error) {
+          console.error("Failed to create note with summary:", error);
+          toast.error("Failed to save note with summary");
+        }
       }
-    } catch {
+    } catch (error) {
+      console.error("Failed to save summary:", error);
       toast.error("Failed to save summary");
     } finally {
       setLoading((s) => ({ ...s, saveSummary: false }));
