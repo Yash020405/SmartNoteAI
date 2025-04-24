@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
@@ -14,8 +14,13 @@ interface NoteFormProps {
 
 export default function NoteForm({ id }: NoteFormProps) {
   const router = useRouter();
-  const [isEdit, setIsEdit] = useState(Boolean(id));
-  const [currentNoteId, setCurrentNoteId] = useState(id);
+  
+  // Track if we're in edit mode and current note ID
+  const [currentNoteId, setCurrentNoteId] = useState<string | undefined>(id);
+  const [isCreatingNewNote, setIsCreatingNewNote] = useState(!id);
+  
+  // Use a ref to track if the note has already been created
+  const noteCreatedRef = useRef(false);
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -30,17 +35,16 @@ export default function NoteForm({ id }: NoteFormProps) {
   const [userId, setUserId] = useState<string | null>(null);
   const [showSummaryLoading, setShowSummaryLoading] = useState(false);
 
+  // Fetch user session
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       setUserId(data.session?.user.id ?? null);
     });
   }, []);
 
+  // Load note data if in edit mode
   useEffect(() => {
-    setIsEdit(Boolean(id));
-    setCurrentNoteId(id);
-
-    if (isEdit && currentNoteId && userId) {
+    if (currentNoteId && userId) {
       getNote(currentNoteId)
         .then((note) => {
           setTitle(note.title);
@@ -52,10 +56,11 @@ export default function NoteForm({ id }: NoteFormProps) {
           toast.error("Failed to load note.");
         });
     }
-  }, [id, isEdit, userId]);
+  }, [currentNoteId, userId]);
 
   const handleGoBack = () => router.push("/dashboard");
 
+  // Generate summary from content
   const handleSummarize = async () => {
     if (!content.trim()) return toast.error("Add content first.");
     setLoading((s) => ({ ...s, summarize: true }));
@@ -75,7 +80,7 @@ export default function NoteForm({ id }: NoteFormProps) {
     }
   };
 
-  // Save only title and content
+  // Create or update note with title and content
   const handleSaveContent = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!title.trim() || !content.trim())
@@ -90,23 +95,24 @@ export default function NoteForm({ id }: NoteFormProps) {
         summary: hasSummary ? summary : undefined, // Keep existing summary if present
       };
 
-      if (isEdit && currentNoteId) {
+      if (currentNoteId) {
+        // Update existing note
         await updateNote(currentNoteId, noteData);
         toast.success("Note updated");
       } else {
-        // Create new note and update component state to edit mode
+        // Create new note
         const newNote = await createNote({
           user_id: userId,
           ...noteData,
         });
-
-        // Update the URL without full page navigation
-        window.history.pushState({}, "", `/dashboard/notes/${newNote.id}`);
-
-        // Update component state to be in edit mode for this note
-        setIsEdit(true);
+        
+        // Update state to reflect we're now editing an existing note
         setCurrentNoteId(newNote.id);
-
+        setIsCreatingNewNote(false);
+        noteCreatedRef.current = true;
+        
+        // Update URL to reflect the note ID
+        router.replace(`/dashboard/notes/${newNote.id}`);
         toast.success("Note created");
       }
     } catch (error) {
@@ -117,44 +123,47 @@ export default function NoteForm({ id }: NoteFormProps) {
     }
   };
 
-  // Save only the summary
+  // Save summary to the current note
   const handleSaveSummary = async () => {
     if (!unsavedSummary.trim()) return toast.error("No summary to save");
     if (!userId) return toast.error("Login required.");
 
     setLoading((s) => ({ ...s, saveSummary: true }));
     try {
-      const noteData = {
-        title,
-        content,
-        summary: unsavedSummary,
-      };
-
-      // If we're in edit mode with an existing note ID
-      if (isEdit && currentNoteId) {
-        // Update existing note with the summary
-        await updateNote(currentNoteId, noteData);
+      // If we already have a note ID, update that note
+      if (currentNoteId) {
+        await updateNote(currentNoteId, {
+          title,
+          content,
+          summary: unsavedSummary
+        });
+        
+        // Update local state
         setSummary(unsavedSummary);
         setHasSummary(true);
         setUnsavedSummary("");
-        toast.success("Summary saved to existing note");
-      } else {
-        // Create a new note with the summary
+        toast.success("Summary saved");
+      } 
+      // If we don't have a note ID yet, create a new note
+      else {
+        console.log("Creating new note with summary");
         const newNote = await createNote({
           user_id: userId,
-          ...noteData,
+          title,
+          content,
+          summary: unsavedSummary
         });
-
-        // Update component state
+        
+        // Update state to reflect we're now editing an existing note
+        setCurrentNoteId(newNote.id);
+        setIsCreatingNewNote(false);
         setSummary(unsavedSummary);
         setHasSummary(true);
         setUnsavedSummary("");
-        setIsEdit(true);
-        setCurrentNoteId(newNote.id);
-
-        // Update the URL
-        window.history.pushState({}, "", `/dashboard/notes/${newNote.id}`);
-        toast.success("New note created with summary");
+        
+        // Update URL with the new note ID
+        router.replace(`/dashboard/notes/${newNote.id}`);
+        toast.success("Note created with summary");
       }
     } catch (error) {
       console.error("Failed to save summary:", error);
@@ -164,6 +173,7 @@ export default function NoteForm({ id }: NoteFormProps) {
     }
   };
 
+  // The rest of the component (render method) remains unchanged
   return (
     <div className="min-h-screen flex font-sans bg-black">
       {/* Left: Content Editor */}
@@ -195,7 +205,7 @@ export default function NoteForm({ id }: NoteFormProps) {
               <Loader2 className="animate-spin h-5 w-5" />
             ) : (
               <>
-                <Save className="h-5 w-5" /> Save Note
+                <Save className="h-5 w-5" /> {currentNoteId ? "Update Note" : "Save Note"}
               </>
             )}
           </Button>

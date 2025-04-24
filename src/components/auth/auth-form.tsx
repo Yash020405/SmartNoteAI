@@ -63,11 +63,8 @@ export default function AuthForm({ isRegister = false }: AuthFormProps) {
     setIsLoading(true);
     
     try {
-      // Get the current origin to determine if we're on localhost or deployed site
-      const siteUrl = window.location.origin;
-      const redirectUrl = siteUrl.includes('localhost')
-        ? `${siteUrl}/auth/callback`
-        : `https://smart-note-ai.vercel.app/auth/callback`;
+      // Always use the current origin for the redirect URL
+      const redirectUrl = `${window.location.origin}/auth/callback`;
 
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
